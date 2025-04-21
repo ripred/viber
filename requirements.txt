@@ -1,0 +1,7 @@
+# Python project requirements will go here
+typer
+llama-cpp-python
+langchain-community
+langchain-openai
+langchain-ollama
+pytest

@@ -1,0 +1,19 @@
+Python test results from executing tests manually:
+============================= test session starts ==============================
+platform darwin -- Python 3.10.6, pytest-8.3.4, pluggy-1.5.0 -- running virtual replication
+cachedir: .pytest_cache
+rootdir: /Users/trent/dev/python/viber
+plugins: langsmith-0.3.8, anyio-4.8.0, playwright-0.7.0, base-url-2.1.0, cov-6.1.1
+collecting ... collected 9 items
+
+test_viber.py::test_list_conversations_empty PASSED                      [ 11%]
+test_viber.py::test_start_ollama_conversation PASSED                     [ 22%]
+test_viber.py::test_remote_conversation_no_api_key SKIPPED (Remote A...) [ 33%]
+test_viber.py::test_start_remote_conversation SKIPPED (Remote API te...) [ 44%]
+test_viber.py::test_local_conversation_no_model_path PASSED              [ 55%]
+test_viber.py::test_local_conversation_invalid_model_path PASSED         [ 66%]
+test_viber.py::test_start_local_conversation PASSED                      [ 77%]
+test_viber.py::test_conversation_message_flow SKIPPED (Remote API te...) [ 88%]
+test_viber.py::test_list_conversations_after_start SKIPPED (Remote A...) [100%]
+
+=================== 5 passed, 4 skipped, 7 warnings in 1.03s ===================
