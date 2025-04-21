@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Pytest cache
+.pytest_cache/
+
+# VSCode settings
+.vscode/
+
+# Test output
+pytest_output.txt
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
+# Env
+.env
