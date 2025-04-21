@@ -10,6 +10,11 @@ Viber is a console-based AI coding assistant and a set of programming assistance
 - [ ] Support for local models
 - [ ] Support for remote models (API key)
 
+## Documentation Requirements
+- Every new function, class, and module MUST include a comprehensive, descriptive docstring.
+- Whenever modifying existing code, update docstrings to accurately reflect the new or changed behavior.
+- Docstrings should follow a consistent style (Google, NumPy, or Sphinx) and clearly describe arguments, return values, exceptions, and important logic.
+
 ## Testing & Code Coverage
 - For every feature added or bug fixed, one or more unit tests MUST be written.
 - We aim to maintain as close to 100% code coverage as possible.
