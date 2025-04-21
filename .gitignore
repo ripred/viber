@@ -181,6 +181,12 @@ cython_debug/
 
 # Test output
 pytest_output.txt
+test_execution_results.txt
+# Generic test result files
+*.testresults
+*.test_results
+*.results
+*.result
 
 # OS junk files
 .DS_Store
