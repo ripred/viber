@@ -15,6 +15,12 @@ from viber import app
 runner = CliRunner()
 
 def ollama_is_running():
+    """
+    Check if the Ollama server is running on localhost.
+
+    Returns:
+        bool: True if Ollama server is running, False otherwise.
+    """
     try:
         r = requests.get("http://localhost:11434/api/tags", timeout=2)
         return r.status_code == 200
@@ -24,6 +30,9 @@ def ollama_is_running():
 def test_list_conversations_empty(monkeypatch):
     """
     Test that the CLI reports no active conversations when none exist.
+
+    Args:
+        monkeypatch: pytest fixture for patching.
     """
     result = runner.invoke(app, ["list-conversations"])
     assert "No active conversations." in result.output
@@ -32,6 +41,7 @@ def test_list_conversations_empty(monkeypatch):
 def test_start_ollama_conversation():
     """
     Test starting a conversation using the Ollama local model (if server is running).
+    Skips the test if Ollama server is not running.
     """
     if not ollama_is_running():
         pytest.skip("Ollama server not running on localhost:11434")
@@ -45,6 +55,9 @@ def test_start_ollama_conversation():
 def test_remote_conversation_no_api_key(monkeypatch):
     """
     Test that the CLI errors if no API key is provided for remote model.
+
+    Args:
+        monkeypatch: pytest fixture for patching.
     """
     result = runner.invoke(app, ["start", "testconv", "--api-key", ""])
     # The CLI will print '[ERROR] No API key provided for remote model.' and abort
@@ -55,6 +68,9 @@ def test_remote_conversation_no_api_key(monkeypatch):
 def test_start_remote_conversation(monkeypatch):
     """
     Test starting a remote conversation with a mocked ChatOpenAI model.
+
+    Args:
+        monkeypatch: pytest fixture for patching.
     """
     with patch("viber.ChatOpenAI") as mock_chat:
         mock_chat.return_value.invoke.return_value = "Hello!"
@@ -82,6 +98,10 @@ def test_local_conversation_invalid_model_path():
 def test_start_local_conversation(monkeypatch, tmp_path):
     """
     Test starting a local conversation with a dummy Llama model file and mocked LlamaCpp.
+
+    Args:
+        monkeypatch: pytest fixture for patching.
+        tmp_path: pytest fixture for temporary directory.
     """
     # Create a dummy model file
     model_path = tmp_path / "dummy.gguf"
@@ -91,19 +111,29 @@ def test_start_local_conversation(monkeypatch, tmp_path):
         result = runner.invoke(app, ["start", "localconv", "--local", "--model-path", str(model_path)], input="exit\n")
         assert "Started conversation 'localconv'" in result.output
         assert "Ending conversation 'localconv'" in result.output
+        # Check that the command exited successfully
         assert result.exit_code == 0
 
 @pytest.mark.skipif(not os.environ.get("RUN_REMOTE_TESTS"), reason="Remote API tests skipped unless RUN_REMOTE_TESTS=1")
 def test_conversation_message_flow(monkeypatch):
     """
     Test the message flow in a remote conversation using mocked ChatOpenAI and RunnableWithMessageHistory.
+
+    Args:
+        monkeypatch: pytest fixture for patching.
     """
+    # Mock the ChatOpenAI and RunnableWithMessageHistory classes
     with patch("viber.ChatOpenAI") as mock_chat, \
          patch("viber.RunnableWithMessageHistory") as mock_runnable:
+        # Get the instance of the mocked RunnableWithMessageHistory class
         mock_runnable_instance = mock_runnable.return_value
+        # Set the side effect of the invoke method to a dummy response
         mock_runnable_instance.invoke.side_effect = ["AI response"]
+        # Invoke the CLI with the start command and the required options
         result = runner.invoke(app, ["start", "msgconv", "--api-key", "dummy"], input="hello\nexit\n")
+        # Check that the output contains the expected response
         assert "AI response" in result.output
+        # Check that the command exited successfully
         assert result.exit_code == 0
 
 @pytest.mark.skipif(not os.environ.get("RUN_REMOTE_TESTS"), reason="Remote API tests skipped unless RUN_REMOTE_TESTS=1")

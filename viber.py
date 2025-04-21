@@ -21,8 +21,25 @@ conversations = {}
 
 
 def get_model(local: bool, api_key: Optional[str] = None, model_path: Optional[str] = None, use_ollama: bool = False, ollama_model: Optional[str] = None):
+    """
+    Select and initialize the appropriate language model (local or remote).
+
+    Args:
+        local (bool): Whether to use a local model.
+        api_key (Optional[str]): API key for remote models (OpenAI).
+        model_path (Optional[str]): Path to local Llama model file.
+        use_ollama (bool): Whether to use Ollama server for local model.
+        ollama_model (Optional[str]): Name of the Ollama model to use.
+
+    Returns:
+        An instance of the selected language model (ChatOpenAI, LlamaCpp, or OllamaLLM).
+
+    Raises:
+        typer.Exit: If required parameters are missing or invalid.
+    """
     if local:
         if use_ollama:
+            # Use Ollama server for local model inference
             model_name = ollama_model or os.getenv("OLLAMA_MODEL", "llama2")
             return OllamaLLM(model=model_name)
         if not model_path or not os.path.isfile(model_path):
@@ -59,64 +76,82 @@ def start(
         ollama_model (Optional[str]): Ollama model name.
     """
     model = get_model(local, api_key, model_path, use_ollama, ollama_model)
-    # Use RunnableWithMessageHistory for conversation management (LangChain >=0.2.7)
+    # Create a prompt template for the conversation
     from langchain_core.prompts import ChatPromptTemplate
     from langchain_core.messages import HumanMessage, AIMessage
     prompt = ChatPromptTemplate.from_messages([
         ("system", "You are a helpful AI assistant."),
         ("user", "{input}")
     ])
+
     class SimpleMemory:
         """
         Simple conversation memory backend for storing message history.
+        Provides add, get, and clear operations for message history.
         """
         def __init__(self):
-            """Initialize message history."""
+            """Initialize message history as an empty list."""
             self._history = []
         def add_message(self, message):
-            """Add a message to history.
+            """
+            Add a message to the history.
 
             Args:
                 message: Message object (HumanMessage or AIMessage).
             """
             self._history.append(message)
         def get_messages(self):
-            """Get all messages in history.
+            """
+            Get all messages currently in the history.
 
             Returns:
-                list: List of messages.
+                list: List of message objects.
             """
             return self._history
         def clear(self):
-            """Clear message history."""
+            """
+            Clear all messages from the history.
+            """
             self._history = []
         @property
         def messages(self):
-            """Get message history (property for compatibility)."""
+            """
+            Property to access message history for compatibility.
+
+            Returns:
+                list: List of message objects.
+            """
             return self._history
+
+    # Set up conversation memory and chain
     memory = SimpleMemory()
     convo = RunnableWithMessageHistory(model, lambda session_id: memory, input_messages_key="input")
     conversations[name] = convo
     typer.echo(f"[INFO] Started conversation '{name}'. Type messages below (type 'exit' to stop):")
     session_id = name
     while True:
+        # Prompt user for input
         user_input = input(f"[{name}] You: ")
         if user_input.lower() in ("exit", "quit"):
+            # Exit conversation loop
             typer.echo(f"[INFO] Ending conversation '{name}'.")
             break
         # Add user message to memory
         memory.add_message(HumanMessage(content=user_input))
-        # Run the model with message history
+        # Run the model with message history and get AI response
         response = convo.invoke({"input": user_input}, config={"configurable": {"session_id": session_id}})
         # Add AI response to memory
         memory.add_message(AIMessage(content=response))
+        # Display AI response
         typer.echo(f"[{name}] AI: {response}")
 
 
 @app.command()
 def list_conversations():
     """
-    List all active conversations.
+    List all active conversations currently stored in memory.
+
+    Prints the names of all active conversations, or a message if none exist.
     """
     if not conversations:
         typer.echo("No active conversations.")
@@ -127,5 +162,5 @@ def list_conversations():
 
 
 if __name__ == "__main__":
-    """Entry point for the Viber CLI application."""
+    # Entry point for the Viber CLI application.
     app()
