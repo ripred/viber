@@ -1,6 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 *$py.class
 
 # C extensions
@@ -172,3 +175,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# VSCode settings
+.vscode/
+
+# Test output
+pytest_output.txt
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
